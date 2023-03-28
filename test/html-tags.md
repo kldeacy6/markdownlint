@@ -105,3 +105,31 @@ And neither is <foo_bar>.
 Nor <123abc>.
 
 Text
+
+<details>
+
+{MD033:109}
+
+	<details>
+
+- Item
+	<details>
+
+{MD033:116}
+
+<custom-element attribute1="value1"
+                attribute2="value2" />
+
+{MD033:120}
+
+Text <!-- <commented-out html="tag"> --> text.
+
+<!-- markdownlint-configure-file {
+  "MD010": false,
+  "MD033": {
+    "allowed_elements": [
+      "strong"
+    ]
+  },
+  "MD046": false
+} -->

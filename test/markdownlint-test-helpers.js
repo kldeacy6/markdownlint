@@ -166,67 +166,6 @@ test("clearHtmlCommentTextEmbedded", (t) => {
   t.is(actual, expected);
 });
 
-test("unescapeMarkdown", (t) => {
-  t.plan(7);
-  // Test cases from https://spec.commonmark.org/0.29/#backslash-escapes
-  const testCases = [
-    [
-      "\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\\/\\:\\;" +
-        "\\<\\=\\>\\?\\@\\[\\\\\\]\\^\\_\\`\\{\\|\\}\\~",
-      "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-    ],
-    [
-      "\\→\\A\\a\\ \\3\\φ\\«",
-      "\\→\\A\\a\\ \\3\\φ\\«"
-    ],
-    [
-      `\\*not emphasized*
-\\<br/> not a tag
-\\[not a link](/foo)
-\\\`not code\`
-1\\. not a list
-\\* not a list
-\\# not a heading
-\\[foo]: /url "not a reference"
-\\&ouml; not a character entity`,
-      `*not emphasized*
-<br/> not a tag
-[not a link](/foo)
-\`not code\`
-1. not a list
-* not a list
-# not a heading
-[foo]: /url "not a reference"
-&ouml; not a character entity`
-    ],
-    [
-      "\\\\*emphasis*",
-      "\\*emphasis*"
-    ],
-    [
-      `foo\\
-bar`,
-      `foo\\
-bar`
-    ],
-    [
-      "Text \\<",
-      "Text _",
-      "_"
-    ],
-    [
-      "Text \\\\<",
-      "Text _<",
-      "_"
-    ]
-  ];
-  for (const testCase of testCases) {
-    const [ markdown, expected, replacement ] = testCase;
-    const actual = helpers.unescapeMarkdown(markdown, replacement);
-    t.is(actual, expected);
-  }
-});
-
 test("isBlankLine", (t) => {
   t.plan(33);
   // @ts-ignore
@@ -1260,12 +1199,16 @@ test("htmlElementRanges", (t) => {
       "Text `<br/>` text",
       "text <br/> text"
     ],
-    "tokens": [
-      {
-        "type": "code_block",
-        "map": [ 10, 12 ]
+    "parsers": {
+      "markdownit": {
+        "tokens": [
+          {
+            "type": "code_block",
+            "map": [ 10, 12 ]
+          }
+        ]
       }
-    ]
+    }
   };
   const expected = [
     [ 3, 5, 12 ],
@@ -1310,180 +1253,6 @@ test("expandTildePath", (t) => {
   t.is(helpers.expandTildePath("~/dir/file", null), "~/dir/file");
 });
 
-test("urlFe", (t) => {
-  t.plan(1);
-  const input = `
-Text ftp://example.com text
-Text ftps://example.com text
-Text http://example.com text
-Text https://example.com text
-Text https://example.com/ text
-Text https://example.com/path text
-Text https://example.com/path/ text
-Text https://example.com/path/file.txt text
-Text https://example.com/path/file.txt?query=string text
-Text https://example.com/path/file.txt#hash text
-Text https://example.com/path/file.txt?query=string#hash text
-Text https://example.com/path# text
-Text https://example.com/path- text
-Text https://example.com/path() text
-Text https://example.com/path(path) text
-Text https://example.com/path(path)path text
-Text https://example.com/path-(path) text
-Text https://example.com/path(() text
-Text https://example.com/path()) text
-Text https://example.com/path(()) text
-Text https://example.com/path((())) text
-Text https://example.com/path()() text
-Text (https://example.com/path) text
-Text <https://example.com/path> text
-Text >https://example.com/path< text
-Text [https://example.com/path] text
-Text "https://example.com/path" text
-Text 'https://example.com/path' text
-Text \`https://example.com/path\` text
-Text ‘https://example.com/path’ text
-Text “https://example.com/path” text
-Text «https://example.com/path» text
-Text [link](https://example.com/path) text
-Text [link](https://example.com/path ) text
-Text [link]( https://example.com/path) text
-Text [link]( https://example.com/path ) text
-Text <code>https://example.com/path</code> text
-Text <a href="https://example.com/path">link</a> text
-Text <a href="https://example.com/path">https://example.com/path</a> text
-Text *https://example.com* text
-Text **https://example.com** text
-Text _https://example.com_ text
-Text __https://example.com__ text
-Text https://example.com. text
-Text https://example.com, text
-Text https://example.com; text
-Text https://example.com: text
-Text https://example.com? text
-Text https://example.com! text
-Text https://example.com。 text
-Text https://example.com， text
-Text https://example.com； text
-Text https://example.com： text
-Text https://example.com！ text
-Text https://example.com,text
-Text https://example.com.path text
-Text https://example.com?path text
-Text https://example.com!text
-Text https://example.com.. text
-Text https://example.com... text
-Text https://example.com.co text
-Text <https://example.com/path text> text
-Text <https://example.com/path.path> text
-Text <https://example.com/path,path> text
-Text <https://example.com/path;path> text
-Text <https://example.com/path:path> text
-Text <https://example.com/path?path> text
-Text <https://example.com/path!path> text
-[https://example.com/path](https://example.com/path)
-[ https://example.com/path](https://example.com/path)
-[https://example.com/path ](https://example.com/path)
-https://example.com/ text https://example.com/path text https://example.com/
-https://example.com
- https://example.com
-https://example.com 
-  `.split(helpers.newLineRe);
-  const expected = `
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text  text
-Text ) text
-Text ) text
-Text )) text
-Text  text
-Text () text
-Text <> text
-Text >< text
-Text [] text
-Text "" text
-Text '' text
-Text \`\` text
-Text ‘’ text
-Text “” text
-Text «» text
-Text [link]() text
-Text [link]( ) text
-Text [link]( ) text
-Text [link](  ) text
-Text <code></code> text
-Text <a href="">link</a> text
-Text <a href=""></a> text
-Text ** text
-Text **** text
-Text __ text
-Text ____ text
-Text . text
-Text , text
-Text ; text
-Text : text
-Text ? text
-Text ! text
-Text 。 text
-Text ， text
-Text ； text
-Text ： text
-Text ！ text
-Text ,text
-Text  text
-Text  text
-Text !text
-Text .. text
-Text ... text
-Text  text
-Text < text> text
-Text <> text
-Text <> text
-Text <> text
-Text <> text
-Text <> text
-Text <> text
-[]()
-[ ]()
-[ ]()
- text  text 
-
- 
- 
-  `.split(helpers.newLineRe);
-  const actual = [];
-  for (let line of input) {
-    const urlRanges = [];
-    let match = null;
-    while ((match = helpers.funcExpExec(helpers.urlFe, line)) !== null) {
-      // @ts-ignore
-      urlRanges.push([ match.index, match[0].length ]);
-    }
-    urlRanges.reverse();
-    for (const range of urlRanges) {
-      const [ index, length ] = range;
-      line = line.slice(0, index) + line.slice(index + length);
-    }
-    actual.push(line);
-  }
-  t.deepEqual(actual, expected);
-});
-
 test("getReferenceLinkImageData().shortcuts", (t) => {
   t.plan(1);
   const options = {
@@ -1494,9 +1263,8 @@ test("getReferenceLinkImageData().shortcuts", (t) => {
         "tags": [ "-" ],
         "function":
           (params) => {
-            const lineMetadata = helpers.getLineMetadata(params);
             const { shortcuts } =
-              helpers.getReferenceLinkImageData(lineMetadata);
+              helpers.getReferenceLinkImageData(params);
             t.is(shortcuts.size, 0, [ ...shortcuts.keys() ].join(", "));
           }
       }

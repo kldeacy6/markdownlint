@@ -49,12 +49,16 @@ HTML <u>javascript</u> {MD044}
     javascript is code {MD044}
     node.js is runtime {MD044}
 
-```js
+```javascript
 javascript is code {MD044} {MD046:52}
 node.js is runtime {MD044}
 ```
 
 Upload the code (to github) {MD044}
+
+Image of ![github](https://github.com/). {MD044}
+
+Image of ![GitHub](https://github.com/).
 
 Link to [github](https://github.com/). {MD044}
 
@@ -88,8 +92,25 @@ Text referencing mULTIPLEcASE name.
 <img src="img/javascript/image.png" error="{MD044}">
 
 <script type="text/javascript">
-{MD044:90}
+{MD044:94}
 javascript {MD044}
 </script>
 
 <a error="{MD044}" id="javascript"/>
+
+<!-- markdownlint-configure-file {
+  "MD033": false,
+  "MD044": {
+    "names": [
+      "Internet Explorer",
+      "markdownlint",
+      "multiplecase",
+      "mULTIPLEcASE",
+      "MultipleCase",
+      "JavaScript",
+      "Node.js",
+      "GitHub",
+      "npm"
+    ]
+  }
+} -->

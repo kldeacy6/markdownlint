@@ -14,9 +14,12 @@
     "demo/markdown-it.min.js",
     "demo/markdownlint-browser.js",
     "demo/markdownlint-browser.min.js",
-    "demo/markdownlint-rule-helpers-browser.js",
-    "demo/markdownlint-rule-helpers-browser.min.js",
+    "demo/micromark-browser.js",
     "example/typescript/type-check.js",
+    "micromark/micromark.cjs",
+    "micromark/micromark.dev.cjs",
+    "micromark/micromark-browser.js",
+    "micromark/micromark-browser.dev.js",
     "test-repos/"
   ],
   "overrides": [
@@ -60,7 +63,7 @@
     }
   ],
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2021,
     "sourceType": "script"
   },
   "plugins": [

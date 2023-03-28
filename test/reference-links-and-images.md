@@ -59,6 +59,8 @@ Shortcut ending in colon: [colon]:
 
 Use of multi-line label: [multi-line-label][]
 
+Use of link in label: [link-in-label][]
+
 Standard link: [text](https://example.com/standard)
 
 Wrapped in brackets: [[text][unique0]] [[unique1][]] [[unique2]]
@@ -73,6 +75,8 @@ Mixed valid/invalid: [text][label] [text][missing] {MD052}
 
 Missing multi-line label {MD052}: [text][missing
 label]
+
+> Missing label in blockquote: [text][missing] {MD052}
 
 ## Non-Links
 
@@ -155,7 +159,6 @@ Missing[^2]
 [image7]: https://example.com/image7
 [image8]: https://example.com/image8
 [`code`]: https://example.com/code
-[^1]: https://example.com/footnote
 [multi line full text]: https://example.com/multi-line-full-text
 [multi line full label]: https://example.com/multi-line-full-label
 [multi line collapsed label]: https://example.com/multi-line-collapsed-label
@@ -168,6 +171,7 @@ Missing[^2]
 [colon]: https://example.com/colon
 [multi-line-label]:
 https://example.com/multi-line-label
+[link-in-label]: https://example.com/path?[brackets][]
 [unique0]: https://example.com/unique0
 [unique1]: https://example.com/unique1
 [unique2]: https://example.com/unique2
@@ -179,6 +183,7 @@ https://example.com/multi-line-label
 [unique8]: https://example.com/unique8
 [unique9]: https://example.com/unique9
 [unique10]: https://example.com/unique10
+[^1]: https://example.com/footnote {MD034}
 
 ## Ignored Labels
 
@@ -188,14 +193,15 @@ https://example.com/multi-line-label
 
 ## Invalid Labels
 
-Duplicate:
+Duplicate/unused:
+
 [label]: {MD053}
-
-Unused:
+[blank-line-filler-0]: https://example.com
 [unused]: {MD053}
-
-Unused footnote:
+[blank-line-filler-1]: https://example.com
 [^3]: {MD053}
+
+[blank-line-filler-0][] [blank-line-filler-1][]
 
 [Duplicate unused multi-line label {MD053}]:
 https://example.com/duplicate-unused-multi-line-label

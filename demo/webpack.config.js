@@ -13,22 +13,21 @@ function config(options) {
     "devtool": false,
     "entry": entry,
     "externals": {
-      "markdown-it": "markdownit"
+      "markdown-it": "markdownit",
+      "markdownlint-micromark": "micromarkBrowser"
     },
     "mode": mode,
     "module": {
       "rules": [
         {
-          "test": /.js$/,
-          "use": [
-            {
-              "loader": "ts-loader",
-              "options": {
-                "configFile": "../demo/tsconfig.json",
-                "transpileOnly": true
-              }
+          "test": /\.[cm]?js$/,
+          "exclude": /node_modules/,
+          "use": {
+            "loader": "babel-loader",
+            "options": {
+              "presets": [ "@babel/preset-env" ]
             }
-          ]
+          }
         }
       ]
     },
@@ -36,7 +35,10 @@ function config(options) {
     "optimization": optimization,
     "output": {
       "filename": filename,
-      "library": name.replace(/(-\w)/g, (m) => m.slice(1).toUpperCase()),
+      "library": {
+        "name": name.replace(/(-\w)/g, (m) => m.slice(1).toUpperCase()),
+        "type": "var"
+      },
       "path": __dirname
     },
     "plugins": [
@@ -81,13 +83,13 @@ const modeProduction = {
   }
 };
 const entryLibrary = {
-  "entry": "../lib/markdownlint.js",
+  "entry": "./markdownlint-exports.js",
   "packageJson": require("../package.json")
 };
-const entryHelpers = {
-  "entry": "../helpers/helpers.js",
-  "packageJson": require("../helpers/package.json")
-};
+// const entryHelpers = {
+//   "entry": "../helpers/helpers.js",
+//   "packageJson": require("../helpers/package.json")
+// };
 module.exports = [
   config({
     ...entryLibrary,
@@ -98,15 +100,15 @@ module.exports = [
     ...entryLibrary,
     ...modeProduction,
     "filename": "markdownlint-browser.min.js"
-  }),
-  config({
-    ...entryHelpers,
-    ...modeDevelopment,
-    "filename": "markdownlint-rule-helpers-browser.js"
-  }),
-  config({
-    ...entryHelpers,
-    ...modeProduction,
-    "filename": "markdownlint-rule-helpers-browser.min.js"
   })
+  // config({
+  //   ...entryHelpers,
+  //   ...modeDevelopment,
+  //   "filename": "markdownlint-rule-helpers-browser.js"
+  // }),
+  // config({
+  //   ...entryHelpers,
+  //   ...modeProduction,
+  //   "filename": "markdownlint-rule-helpers-browser.min.js"
+  // })
 ];

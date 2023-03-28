@@ -6,7 +6,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const jsYaml = require("js-yaml");
 const md = require("markdown-it")();
-const pluginFootnote = require("markdown-it-footnote");
 const pluginInline = require("markdown-it-for-inline");
 const pluginSub = require("markdown-it-sub");
 const pluginSup = require("markdown-it-sup");
@@ -43,6 +42,7 @@ test("simpleAsync", (t) => new Promise((resolve) => {
     "Files should end with a single newline character";
   markdownlint(options, (err, actual) => {
     t.falsy(err);
+    // @ts-ignore
     t.is(actual.toString(), expected, "Unexpected results.");
     resolve();
   });
@@ -75,32 +75,31 @@ test("simplePromise", (t) => {
   });
 });
 
-test("projectFiles", (t) => new Promise((resolve) => {
+test("projectFiles", (t) => {
   t.plan(2);
-  import("globby")
-    .then((module) => module.globby("doc/*.md"))
-    .then((files) => [
-      ...files,
-      "CONTRIBUTING.md",
-      "README.md",
-      "helpers/README.md"
-    ])
+  return import("globby")
+    .then((module) => module.globby([
+      "*.md",
+      "doc/*.md",
+      "helpers/*.md",
+      "micromark/*.md",
+      "schema/*.md"
+    ]))
     .then((files) => {
+      t.is(files.length, 58);
       const options = {
         files,
         "config": require("../.markdownlint.json")
       };
-      markdownlint(options, function callback(err, actual) {
-        t.falsy(err);
+      return markdownlint.promises.markdownlint(options).then((actual) => {
         const expected = {};
         for (const file of files) {
           expected[file] = [];
         }
         t.deepEqual(actual, expected, "Issue(s) with project files.");
-        resolve();
       });
     });
-}));
+});
 
 test("stringInputLineEndings", (t) => new Promise((resolve) => {
   t.plan(2);
@@ -164,6 +163,7 @@ test("defaultTrue", (t) => new Promise((resolve) => {
     "config": {
       "default": true
     },
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -194,6 +194,7 @@ test("defaultFalse", (t) => new Promise((resolve) => {
     "config": {
       "default": false
     },
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -216,6 +217,7 @@ test("defaultUndefined", (t) => new Promise((resolve) => {
       "./test/first_heading_bad_atx.md"
     ],
     "config": {},
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -277,6 +279,7 @@ test("enableRules", (t) => new Promise((resolve) => {
       "default": false,
       "no-multiple-space-atx": true
     },
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -308,6 +311,7 @@ test("enableRulesMixedCase", (t) => new Promise((resolve) => {
       "DeFaUlT": false,
       "nO-mUlTiPlE-sPaCe-AtX": true
     },
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -338,6 +342,7 @@ test("disableTag", (t) => new Promise((resolve) => {
       "default": true,
       "spaces": false
     },
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -433,6 +438,7 @@ test("styleAll", (t) => new Promise((resolve) => {
   const options = {
     "files": [ "./test/break-all-the-rules.md" ],
     "config": require("../style/all.json"),
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -476,13 +482,13 @@ test("styleAll", (t) => new Promise((resolve) => {
         "MD042": [ 81 ],
         "MD045": [ 85 ],
         "MD046": [ 49, 73, 77 ],
-        "MD047": [ 101 ],
+        "MD047": [ 120 ],
         "MD048": [ 77 ],
         "MD049": [ 90 ],
         "MD050": [ 94 ],
         "MD051": [ 96 ],
         "MD052": [ 98 ],
-        "MD053": [ 99 ]
+        "MD053": [ 100 ]
       }
     };
     // @ts-ignore
@@ -496,6 +502,7 @@ test("styleRelaxed", (t) => new Promise((resolve) => {
   const options = {
     "files": [ "./test/break-all-the-rules.md" ],
     "config": require("../style/relaxed.json"),
+    "noInlineConfig": true,
     "resultVersion": 0
   };
   markdownlint(options, function callback(err, actualResult) {
@@ -524,13 +531,13 @@ test("styleRelaxed", (t) => new Promise((resolve) => {
         "MD042": [ 81 ],
         "MD045": [ 85 ],
         "MD046": [ 49, 73, 77 ],
-        "MD047": [ 101 ],
+        "MD047": [ 120 ],
         "MD048": [ 77 ],
         "MD049": [ 90 ],
         "MD050": [ 94 ],
         "MD051": [ 96 ],
         "MD052": [ 98 ],
-        "MD053": [ 99 ]
+        "MD053": [ 100 ]
       }
     };
     // @ts-ignore
@@ -784,7 +791,9 @@ test("missingStringValue", (t) => new Promise((resolve) => {
   t.plan(2);
   markdownlint({
     "strings": {
+      // @ts-ignore
       "undefined": undefined,
+      // @ts-ignore
       "null": null,
       "empty": ""
     }
@@ -830,6 +839,7 @@ test("customFileSystemAsync", (t) => new Promise((resolve) => {
     "fs": fsApi
   }, function callback(err, result) {
     t.falsy(err);
+    // @ts-ignore
     t.deepEqual(result[file].length, 1, "Did not report violations.");
     resolve();
   });
@@ -912,30 +922,38 @@ test("readme", (t) => new Promise((resolve) => {
 }));
 
 test("validateJsonUsingConfigSchemaStrict", (t) => {
-  const jsonFileRe = /\.json$/i;
-  const resultsFileRe = /\.results\.json$/i;
-  const jsConfigFileRe = /^jsconfig\.json$/i;
-  const wrongTypesFileRe = /wrong-types-in-config-file.json$/i;
-  const testDirectory = __dirname;
-  const testFiles = fs
-    .readdirSync(testDirectory)
-    .filter(function filterFile(file) {
-      return jsonFileRe.test(file) &&
-        !resultsFileRe.test(file) &&
-        !jsConfigFileRe.test(file) &&
-        !wrongTypesFileRe.test(file);
+  t.plan(156);
+  const configRe =
+    /^[\s\S]*<!-- markdownlint-configure-file ([\s\S]*) -->[\s\S]*$/;
+  const ignoreFiles = new Set([
+    "README.md",
+    "test/inline-configure-file-invalid.md",
+    "test/inline-configure-file-violations.md",
+    "test/invalid-ul-style-style.md",
+    "test/wrong-types-in-config-file.md"
+  ]);
+  return import("globby")
+    .then((module) => module.globby([
+      "*.md",
+      "doc/*.md",
+      "helpers/*.md",
+      "micromark/*.md",
+      "schema/*.md",
+      "test/*.md"
+    ]))
+    .then((files) => {
+      const testFiles = files.filter((file) => !ignoreFiles.has(file));
+      for (const file of testFiles) {
+        const data = fs.readFileSync(file, "utf8");
+        if (configRe.test(data)) {
+          const config = data.replace(configRe, "$1");
+          t.true(
+            // @ts-ignore
+            tv4.validate(JSON.parse(config), configSchemaStrict),
+            file + "\n" + JSON.stringify(tv4.error, null, 2));
+        }
+      }
     });
-  for (const file of testFiles) {
-    const data = fs.readFileSync(
-      path.join(testDirectory, file),
-      // eslint-disable-next-line unicorn/prefer-json-parse-buffer
-      "utf8"
-    );
-    t.true(
-      // @ts-ignore
-      tv4.validate(JSON.parse(data), configSchemaStrict),
-      file + "\n" + JSON.stringify(tv4.error, null, 2));
-  }
 });
 
 test("validateConfigSchemaAllowsUnknownProperties", (t) => {
@@ -1153,7 +1171,7 @@ test("texmath test files with texmath plugin", (t) => new Promise((resolve) => {
   });
 }));
 
-test("Pandoc footnote via footnote plugin", (t) => new Promise((resolve) => {
+test("Pandoc footnote", (t) => new Promise((resolve) => {
   t.plan(2);
   markdownlint({
     "strings": {
@@ -1169,7 +1187,6 @@ Text with: [^footnote]
 [reference]: https://example.com
 `
     },
-    "markdownItPlugins": [ [ pluginFootnote ] ],
     "resultVersion": 0
   }, (err, actual) => {
     t.falsy(err);
@@ -1190,7 +1207,9 @@ test("token-map-spans", (t) => {
         "function": function tokenMapSpans(params) {
           const tokenLines = [];
           let lastLineNumber = -1;
-          const inlines = params.tokens.filter((c) => c.type === "inline");
+          const inlines = params.parsers.markdownit.tokens.filter(
+            (c) => c.type === "inline"
+          );
           for (const token of inlines) {
             t.truthy(token.map);
             for (let i = token.map[0]; i < token.map[1]; i++) {
@@ -1292,6 +1311,7 @@ test("configParsersYAML", async(t) => {
     },
     "configParsers": [ jsYaml.load ]
   };
+  // @ts-ignore
   const actual = await markdownlint.promises.markdownlint(options);
   t.is(actual.toString(), "", "Unexpected results.");
 });
