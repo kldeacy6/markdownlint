@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "amazonwebservices.aws-toolkit-vscode",
+        "googlecloudtools.cloudcode",
+        "visualstudioexptteam.vscodeintellicode",
+        "davidanson.vscode-markdownlint"
+    ]
+}
